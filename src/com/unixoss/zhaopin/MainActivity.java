@@ -2,6 +2,7 @@ package com.unixoss.zhaopin;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.ParseException;
 import java.util.List;
 
 import android.os.Bundle;
@@ -32,14 +33,15 @@ public class MainActivity extends Activity implements Runnable {
 	@Override
 	public void run() {
 		try {
-			HtmlParser parser = new HtmlParser("http://job.ustb.edu.cn/" +
-					"accms/sites/jobc/zhaopinhuixinxi-list.jsp?" +
-					"F_FL1=%E6%A0%A1%E5%86%85&F_FL2=");
+			HtmlParser parser = new HtmlParser("http://job.ustb.edu.cn/accms/sites/jobc/zhaopinhuixinxi-list.jsp?fromDate=20121029&F_FL1=%E6%A0%A1%E5%86%85&F_FL2=");
 			List<Info> list = parser.getInfo();
 			adapter.notifyDataSetChanged(list);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
