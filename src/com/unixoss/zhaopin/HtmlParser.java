@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.util.Log;
-
 public class HtmlParser {
 	URL url;
 	public HtmlParser(String url) throws MalformedURLException {
@@ -35,11 +33,9 @@ public class HtmlParser {
 		String reType = "^.*rmtimespan.*\\[(\\w*).*";
 		String reTitle = "^.*rmTitle.*href=\"(.*)\">(.*)<.*";
 		String reTimeLocal = "^.*rmLocation.*";
-		String reDateLocal = "^.*<(.*)";
 		Pattern paType = Pattern.compile(reType);
 		Pattern paTitle = Pattern.compile(reTitle);
 		Pattern paTimeLocal = Pattern.compile(reTimeLocal);
-		Pattern paDateLocal = Pattern.compile(reDateLocal);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		List<Info> list = new ArrayList<Info>();
 		Info info = new Info();
@@ -49,16 +45,17 @@ public class HtmlParser {
 			if(line == null)
 				break;
 			Matcher matcher = paType.matcher(line);
+			if(line.contains("rmRow")) {
+				info.first = true;
+				continue;
+			}
 			if(matcher.matches()) {
-				Log.d("type", matcher.group(1));
 				info.type = matcher.group(1);
 				continue;
 			}
 			matcher = paTitle.matcher(line);
 			if(matcher.matches()) {
 				info.link = matcher.group(1);
-				Log.d("link", matcher.group(1));
-				Log.d("title.", matcher.group(2));
 				info.title = matcher.group(2);
 				continue;
 			}
@@ -69,21 +66,13 @@ public class HtmlParser {
 					line = reader.readLine();
 					builder.append(line);
 				}
-				Log.d("builder1", ""+builder.toString().);
-				String str = builder.toString().replace("\r", "");
-				matcher = paDateLocal.matcher(builder.toString());
-				Log.d("builderbool1", ""+ Pattern.compile(".*").matcher(str).group());
-				Log.d("buildergroup", matcher.group());
+				//正则表达式不知道为什么就匹配不上，于是使用substring，但序号依然费解。
 				DateFormat formater = new SimpleDateFormat("MM月dd日HH:mm");
-				Date date = formater.parse(matcher.group(0));
+				Date date = formater.parse(builder.substring(0, 16));
 				info.start = date.getTime();
-				date = formater.parse(matcher.group(2));
+				date = formater.parse(builder.substring(22, 38));
 				info.end = date.getTime();
-				info.location = matcher.group(4);
-				Log.d("start", info.start + "");
-				Log.d("end", info.end + "");
-				Log.d("location", info.location + "");
-				//TODO: add time and location.
+				info.location = builder.substring(61).replace("</td>", "");
 				list.add(info);
 				info = new Info();
 				continue;
@@ -100,4 +89,5 @@ class Info {
 	long start;
 	long end;
 	String location;
+	boolean first;
 }
